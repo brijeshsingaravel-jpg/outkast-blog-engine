@@ -10,27 +10,16 @@ def load_approved_topic():
         return json.load(f)
 
 def load_voice_prompt():
-    with open("voice_prompt.txt", "r") as f:
+    with open("voice_prompt.txt", "r", encoding="utf-8") as f:
         return f.read().strip()
 
 def write_content(topic_data):
     client = Groq(api_key=GROQ_API_KEY)
+    voice = load_voice_prompt()
 
     topic = topic_data["topic"]
     angle = topic_data["outkast_angle"]
     keywords = topic_data["keywords"]
-
-    voice = """
-OUTKAST BRAND VOICE:
-- Outkast is an Indian streetwear brand built on rebellion, anti-conformity, and raw authenticity
-- Tone: Bold, opinionated, sharp, culturally aware, never corporate
-- Write like a street-smart creative director who has opinions and isn't afraid to say them
-- Use short punchy sentences mixed with longer ones for rhythm
-- Reference Indian youth culture, street culture, music, and global trends naturally
-- Never sound like a press release. Never sound generic. Never preach.
-- End with a call to action that ties back to individuality and the Outkast mindset
-- SEO keywords must appear naturally — never forced
-"""
 
     # --- SHOPIFY BLOG ---
     print("Writing Shopify blog...")
@@ -43,14 +32,15 @@ Angle: {angle}
 Keywords to include naturally: {keywords}
 
 Structure:
-- Compelling H1 title (not clickbait, genuinely sharp)
-- Hook intro paragraph (3-4 sentences, pull the reader in)
-- 3-4 sections with H2 subheadings
+- Compelling H1 title (sharp, unexpected — not clickbait)
+- Hook intro paragraph (2-3 sentences, pull the reader in immediately)
+- 3-4 sections with sharp H2 subheadings
 - Each section 80-120 words
-- Closing paragraph with Outkast brand tie-in
-- Meta description (under 160 characters) at the very end labeled "META:"
+- Closing paragraph tying back to Outkast's world
+- Meta description under 160 characters at the very end labeled "META:"
 
 Total length: 800-1000 words
+Follow the voice, structure, and rules exactly as defined above.
 """
     blog_response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -64,17 +54,15 @@ Total length: 800-1000 words
     twitter_prompt = f"""
 {voice}
 
-Write a Twitter/X thread about this topic for Outkast's account:
+Write a Twitter/X thread for Outkast's account:
 Topic: {topic}
 Angle: {angle}
 
-Rules:
+Follow the TWITTER THREAD STYLE rules defined above exactly.
 - 8 tweets maximum
-- First tweet is the hook — bold, makes people stop scrolling
-- Each tweet under 280 characters
 - Number them: 1/ 2/ 3/ etc.
-- Last tweet ties back to Outkast brand with a punch
-- No hashtag spam — max 2 hashtags total in the whole thread
+- Each tweet under 280 characters
+- Max 2 hashtags in the entire thread
 """
     twitter_response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -92,11 +80,10 @@ Write a single Threads post for Outkast's account:
 Topic: {topic}
 Angle: {angle}
 
-Rules:
+Follow the THREADS STYLE rules defined above exactly.
 - 150-300 words
-- Conversational but sharp
-- One strong opinion, backed up with 2-3 points
-- End with a question to drive comments
+- One strong opinion, 2-3 supporting points
+- End with a question
 - No hashtags
 """
     threads_response = client.chat.completions.create(
@@ -111,16 +98,16 @@ Rules:
     reddit_prompt = f"""
 {voice}
 
-Write a Reddit post for r/streetwear or r/india about this topic:
+Write a Reddit post about this topic:
 Topic: {topic}
 Angle: {angle}
 
-Rules:
-- Title: genuine, curiosity-driving, not clickbait
+Follow the REDDIT STYLE rules defined above exactly.
+- Title: genuine, curiosity-driving
 - Body: 150-250 words
-- Sound like a real person sharing an opinion, not a brand
-- Subtle brand mention only at the very end, naturally
-- Invite discussion with a question
+- Sound like a real person, not a brand
+- Subtle brand mention only if completely natural at the end
+- End with a question to invite discussion
 """
     reddit_response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -139,13 +126,13 @@ Topic: {topic}
 Angle: {angle}
 Keywords: {keywords}
 
-Rules:
+Follow the MEDIUM STYLE rules defined above exactly.
 - Title: thoughtful, editorial style
 - 500-700 words
-- More reflective tone than the blog — Medium readers want depth
-- 3 sections with subheadings
-- End with a strong closing thought
-- No direct brand promotion — let the ideas speak
+- 3 sections with sharp subheadings
+- More reflective tone — let the ideas breathe
+- Strong closing thought
+- No direct brand promotion
 """
     medium_response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -157,6 +144,7 @@ Rules:
     # --- SAVE ALL OUTPUT ---
     output = {
         "topic": topic,
+        "keywords": keywords,
         "blog": blog_content,
         "twitter": twitter_content,
         "threads": threads_content,
