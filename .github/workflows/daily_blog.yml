@@ -1,0 +1,43 @@
+name: Outkast Daily Blog Engine
+
+on:
+  schedule:
+    - cron: '30 1 * * *'  # 7:00 AM IST (UTC+5:30)
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+jobs:
+  run-blog-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pytrends praw groq python-telegram-bot requests google-genai
+
+      - name: Run blog engine
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          COFOUNDER_CHAT_ID: ${{ secrets.COFOUNDER_CHAT_ID }}
+          SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+          SHOPIFY_STORE_URL: ${{ secrets.SHOPIFY_STORE_URL }}
+        run: python main.py
+
+      - name: Commit updated dashboard
+        run: |
+          git config --global user.email "bot@outkast.com"
+          git config --global user.name "Outkast Bot"
+          git add dashboard.html content_log.json
+          git diff --staged --quiet || git commit -m "Auto: Daily blog update $(date +'%Y-%m-%d')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
