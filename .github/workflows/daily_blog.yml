@@ -35,7 +35,7 @@ jobs:
           SHOPIFY_STORE_URL: ${{ secrets.SHOPIFY_STORE_URL }}
         run: python main.py
 
-           - name: Commit updated dashboard
+      - name: Commit updated dashboard
         run: |
           git config --global user.email "bot@outkast.com"
           git config --global user.name "Outkast Bot"
